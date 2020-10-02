@@ -18,6 +18,10 @@ class NotEnoughPoints(AlphaException):
     pass
 
 
+class OptimizationFailure(AlphaException):
+    pass
+
+
 class Delaunay(Triangulation):
     """
     Visitor sublclass of matplotlib.tri.Triangulation.
@@ -95,6 +99,8 @@ class Alpha_Shape_Base(Delaunay):
                 alpha_opt = 1/np.sqrt(self._sorted_circumradii_sw()[n])
                 shape = self._shape_from_simplices(simplices)
                 return alpha_opt, shape
+
+        raise OptimizationFailure()
 
 
 def _denormalize(method):
