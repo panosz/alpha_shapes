@@ -92,7 +92,8 @@ class Alpha_Shape_Base(Delaunay):
         return set(range(n_points)) - set(np.ravel(simplices))
 
     def optimize(self):
-        for n in range(1, len(self)+1):
+        # At least N//3 triangles are needed to connect N points.
+        for n in range(len(self)//3, len(self)+1):
             simplices = self._sorted_simplices()[:n]
             uncovered_vertices = self._uncovered_vertices(simplices)
             if not uncovered_vertices:
