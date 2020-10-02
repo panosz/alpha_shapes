@@ -43,7 +43,7 @@ class Delaunay(Triangulation):
         return self.triangles
 
     def __len__(self):
-        return self.simplices.size
+        return self.simplices.shape[0]
 
 
 class Alpha_Shape_Base(Delaunay):
