@@ -1,0 +1,4 @@
+venv/
+alpha_shapes.egg-info/
+.ycm_extra_conf.py
+__pycache__
