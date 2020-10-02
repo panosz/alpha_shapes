@@ -25,6 +25,7 @@ class Delaunay(Triangulation):
     """
 
     def __init__(self, coords):
+        coords = np.unique(coords, axis=0)  # ignore duplicate points
         try:
             super().__init__(x=coords[:, 0], y=coords[:, 1])
         except ValueError as e:
