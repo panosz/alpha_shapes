@@ -21,14 +21,10 @@ points = [(0.,    0.),    (0.,    1.),    (1.,    1.1),
           (0.5,   2.75),  (0.25,  2.5),   (0.75,  2.25)]
 
 
-few_points = np.array([(0.,    0.),    (0.,    1.)
-              ])
-
 x_scale = 1e-3
 points = np.array(points)
 #  Make sure that the data have different characteristic x and y scales
 points[:, 0] *= x_scale
-few_points[:, 0] *= x_scale
 
 #  Create the alpha shape without accounting for the x and y scale separation
 alpha_opt_unscaled, alpha_shape_unscaled = Alpha_Shaper_Base(points).optimize()
