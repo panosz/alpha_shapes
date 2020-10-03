@@ -46,7 +46,7 @@ class Delaunay(Triangulation):
         return self.simplices.shape[0]
 
 
-class Alpha_Shape_Base(Delaunay):
+class Alpha_Shaper_Base(Delaunay):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         circumradii_sq = [_circumradius_sq_simplex(smpl, self)
@@ -132,7 +132,7 @@ def _denormalize(method):
     return wrapper
 
 
-class Alpha_Shape(Alpha_Shape_Base):
+class Alpha_Shaper(Alpha_Shaper_Base):
 
     def __init__(self, points, *args, normalize=False, **kwargs):
 

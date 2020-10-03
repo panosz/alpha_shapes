@@ -1,12 +1,12 @@
 from descartes import PolygonPatch
 import numpy as np
 import matplotlib.pyplot as plt
-from alpha_shapes.alpha_shapes import Alpha_Shape
+from alpha_shapes.alpha_shapes import Alpha_Shaper
 
 #  Define a set of points
 
 points = np.random.random((1000, 2))
-alpha_shaper = Alpha_Shape(points, normalize=True)
+alpha_shaper = Alpha_Shaper(points, normalize=True)
 alpha_opt, alpha_shape = alpha_shaper.optimize()
 alpha_sub_opt = alpha_shaper.get_shape(alpha_opt*1.5)
 print(alpha_opt)
