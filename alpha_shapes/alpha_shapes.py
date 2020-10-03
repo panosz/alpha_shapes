@@ -86,20 +86,24 @@ class Alpha_Shaper_Base(Delaunay):
     def _uncovered_vertices(self, simplices):
         """
         Return a set of vertices that is not covered by the
-        provided simplices.
+        specified simplices.
         """
         n_points = self.x.size
         return set(range(n_points)) - set(np.ravel(simplices))
 
     def optimize(self):
         # At least N//3 triangles are needed to connect N points.
-        for n in range(len(self)//3, len(self)+1):
-            simplices = self._sorted_simplices()[:n]
-            uncovered_vertices = self._uncovered_vertices(simplices)
+        simplices = self._sorted_simplices()
+        n_start = len(self)//3
+        n_finish = len(self)+1
+        uncovered_vertices = self._uncovered_vertices(simplices[:n_start])
+        for n in range(n_start, n_finish):
             if not uncovered_vertices:
                 alpha_opt = 1/np.sqrt(self._sorted_circumradii_sw()[n])
-                shape = self._shape_from_simplices(simplices)
+                shape = self._shape_from_simplices(simplices[:n])
                 return alpha_opt, shape
+            for vertices in simplices[n]:
+                uncovered_vertices.discard(vertices)
 
         raise OptimizationFailure()
 
@@ -189,14 +193,6 @@ def _circumradius_sq_simplex(smpl, tri):
     return _circumradius_sq(lengths)
 
 
-def _should_include_simplex(smpl, alpha, tri):
-    """
-    Determine if a simplex `smpl` of a given triangulation `tri` should
-    be included in the alpha complex with parameter `alpha`.
-    """
-    return _circumradius_sq_simplex(smpl, tri) <= 1 / alpha**2
-
-
 def _simplex_to_triangle(smpl, tri):
     x = tri.x[smpl]
     y = tri.y[smpl]
@@ -204,19 +200,3 @@ def _simplex_to_triangle(smpl, tri):
     return Polygon(zip(x, y))
 
 
-def _alpha_shape(points, alpha, tri=None, report_tri=False):
-    if tri is None:
-        tri = Delaunay(points)
-
-    if (alpha <= 0):
-        def include_simplex(smpl):
-            return True
-    else:
-        def include_simplex(smpl):
-            return _should_include_simplex(smpl, alpha, tri)
-
-    triangles = [_simplex_to_triangle(smpl, tri) for smpl in tri.simplices
-                 if include_simplex(smpl)
-                 ]
-
-    return unary_union(triangles)

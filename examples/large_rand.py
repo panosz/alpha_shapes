@@ -1,3 +1,4 @@
+from time import time
 from descartes import PolygonPatch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,7 +8,12 @@ from alpha_shapes.alpha_shapes import Alpha_Shaper
 
 points = np.random.random((1000, 2))
 alpha_shaper = Alpha_Shaper(points, normalize=True)
+
+ts = time()
 alpha_opt, alpha_shape = alpha_shaper.optimize()
+te = time()
+print(f'optimization took: {te-ts:.2} sec')
+
 alpha_sub_opt = alpha_shaper.get_shape(alpha_opt*1.5)
 print(alpha_opt)
 
