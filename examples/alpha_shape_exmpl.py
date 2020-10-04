@@ -27,7 +27,7 @@ points = np.array(points)
 points[:, 0] *= x_scale
 
 #  Create the alpha shape without accounting for the x and y scale separation
-alpha_opt_unscaled, alpha_shape_unscaled = Alpha_Shaper_Base(points).optimize()
+alpha_opt_unscaled, alpha_shape_unscaled = Alpha_Shaper(points).optimize()
 print(alpha_opt_unscaled)
 
 
