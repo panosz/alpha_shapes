@@ -1,7 +1,7 @@
 from descartes import PolygonPatch
 import numpy as np
 import matplotlib.pyplot as plt
-from alpha_shapes.alpha_shapes import Alpha_Shaper_Base, Alpha_Shaper
+from alpha_shapes.alpha_shapes import Alpha_Shaper
 
 #  Define a set of points
 
@@ -27,13 +27,15 @@ points = np.array(points)
 points[:, 0] *= x_scale
 
 #  Create the alpha shape without accounting for the x and y scale separation
-alpha_opt_unscaled, alpha_shape_unscaled = Alpha_Shaper(points).optimize()
+shaper = Alpha_Shaper(points)
+alpha_opt_unscaled, alpha_shape_unscaled = shaper.optimize()
 print(alpha_opt_unscaled)
 
 
 # If the characteristic scale along each axis varies significantly,
 # it may make sense to turn on the `normalize` option.
-alpha_opt_scaled, alpha_shape_scaled = Alpha_Shaper(points, normalize=True).optimize()
+shaper = Alpha_Shaper(points, normalize=True)
+alpha_opt_scaled, alpha_shape_scaled = shaper.optimize()
 print(alpha_opt_scaled)
 
 #  Compare the alpha shapes calculated with and without scaling.
