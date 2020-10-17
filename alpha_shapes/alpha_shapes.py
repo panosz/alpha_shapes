@@ -138,7 +138,7 @@ def _denormalize(method):
 
 class Alpha_Shaper(Alpha_Shaper_Base):
 
-    def __init__(self, points, *args, normalize=False, **kwargs):
+    def __init__(self, points, *args, normalize=True, **kwargs):
 
         self.normalize = normalize
 
