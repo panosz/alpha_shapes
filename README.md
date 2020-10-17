@@ -3,6 +3,7 @@ A Python package for reconstructing the shape of a 2D point cloud on the plane.
 
 ## Table of Contents
 * **[Introduction](#introduction)**
+* **[Installation](#installation)**
 * **[Usage](#usage)**
 * **[Features](#features)**
   * **[Optimization](#optimization)**
@@ -14,6 +15,10 @@ Given a finite set of points (or point cloud) in the Euclidean plane, [alpha sha
 
 Intuitively an alpha shape can be conceptualized as follows. Imagine carving out the plane using a cookie scoop of radius 1/**α**, without removing any of the points in the point cloud. The shape that remains **is** the shape of the point cloud. If we replace the arc-like edges, due to the circular rim of the scoop, with straight segments, we are left with the alpha shape of parameter **α**.
 
+## Installation
+```console
+pip install --user alpha_shapes
+```
 ## Usage
 Imports:
 ```python

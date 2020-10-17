@@ -1,4 +1,8 @@
-venv/
-alpha_shapes.egg-info/
+*venv/
+build/
+dist/
+*.egg-info/
 .ycm_extra_conf.py
+.test_token.txt
+.token.txt
 __pycache__
