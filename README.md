@@ -1,5 +1,5 @@
 # alpha_shapes
-A Python library for reconstructing the shape of a 2D point cloud on the plane.
+A Python package for reconstructing the shape of a 2D point cloud on the plane.
 
 ## Table of Contents
 * **[Introduction](#introduction)**
