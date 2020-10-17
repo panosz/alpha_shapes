@@ -21,25 +21,26 @@ points = [(0.,    0.),    (0.,    1.),    (1.,    1.1),
           (0.5,   2.75),  (0.25,  2.5),   (0.75,  2.25)]
 
 
+# Scale the points along the x-dimension
 x_scale = 1e-3
 points = np.array(points)
-#  Make sure that the data have different characteristic x and y scales
 points[:, 0] *= x_scale
 
 #  Create the alpha shape without accounting for the x and y scale separation
-shaper = Alpha_Shaper(points)
-alpha_opt_unscaled, alpha_shape_unscaled = shaper.optimize()
-print(alpha_opt_unscaled)
+unnormalized_shaper = Alpha_Shaper(points, normalize=False)
+_, alpha_shape_unscaled = unnormalized_shaper.optimize()
 
 
 # If the characteristic scale along each axis varies significantly,
 # it may make sense to turn on the `normalize` option.
 shaper = Alpha_Shaper(points, normalize=True)
-alpha_opt_scaled, alpha_shape_scaled = shaper.optimize()
-print(alpha_opt_scaled)
+_, alpha_shape_scaled = shaper.optimize()
 
 #  Compare the alpha shapes calculated with and without scaling.
-fig, (ax0, ax1, ax2) = plt.subplots(1, 3)
+fig, (ax0, ax1, ax2) = plt.subplots(1, 3,
+                                    sharey=True,
+                                    sharex=True,
+                                    constrained_layout=True)
 ax0.scatter(*zip(*points))
 ax0.set_title('data')
 ax1.scatter(*zip(*points))
@@ -50,8 +51,7 @@ ax2.add_patch(PolygonPatch(alpha_shape_unscaled, alpha=0.2))
 ax2.set_title("without normalization")
 
 for ax in (ax1, ax2):
-    pass
-    #  x.set_axis_off()
+    ax.set_axis_off()
 for ax in (ax0, ax1, ax2):
     ax.set_aspect(x_scale)
 
