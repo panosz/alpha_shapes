@@ -29,7 +29,7 @@ class Delaunay(Triangulation):
     """
 
     def __init__(self, coords):
-        coords = np.unique(coords, axis=0)  # ignore duplicate points
+        #  coords = np.unique(coords, axis=0)  # ignore duplicate points
         try:
             super().__init__(x=coords[:, 0], y=coords[:, 1])
         except ValueError as e:
@@ -66,6 +66,9 @@ class Alpha_Shaper_Base(Delaunay):
                      ]
 
         return unary_union(triangles)
+
+    def get_mask(self, alpha):
+        return self.circumradii_sq > 1 / alpha**2
 
     def get_shape(self, alpha):
         if alpha > 0:
@@ -158,6 +161,11 @@ class Alpha_Shaper(Alpha_Shaper_Base):
     def optimize(self, *args, **kwargs):
         return super().optimize(*args, **kwargs)
 
+    def denormalize(self):
+        if self.normalize:
+            self.x= self.x * self.scale[0] + self.center[0]
+            self.y = self.y * self.scale[1] + self.center[1]
+
 
 def _circumradius_sq(lengths):
     r"""
@@ -172,6 +180,9 @@ def _circumradius_sq(lengths):
     num = np.prod(lengths) ** 2
 
     denom = 16 * s * np.prod(s-lengths)
+
+    if denom < 1e-16:
+        return np.inf
 
     return num/denom
 
