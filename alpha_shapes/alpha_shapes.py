@@ -165,6 +165,7 @@ class Alpha_Shaper(Alpha_Shaper_Base):
         if self.normalize:
             self.x= self.x * self.scale[0] + self.center[0]
             self.y = self.y * self.scale[1] + self.center[1]
+            self.normalize = False  # Required to avoid accidentally denomalizing multiple times
 
 
 def _circumradius_sq(lengths):
