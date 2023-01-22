@@ -5,22 +5,18 @@ from alpha_shapes.alpha_shapes import Alpha_Shaper
 
 #  Define a set of points
 
-points = [(0.,    0.),    (0.,    1.),    (1.,    1.1),
-          (1.,    0.),    (0.25,  0.15),  (0.65,  0.45),
-          (0.75,  0.75),  (0.5,   0.5),   (0.5,   0.25),
-          (0.5,   0.75),  (0.25,  0.5),   (0.75,  0.25),
-          (0.,    2.),    (0.,    2.1),    (1.,    2.1),
-          (0.5,    2.5),
-          (-0.5,    1.5), (-0.25,    1.5),
-          (-0.25,    1.25), (0,    1.25),
-          (1.5,    1.5), (1.25,    1.5),
-          (1.25,    1.25), (1,    1.25),
-          (0.5,    2.25),
-          (1.,    2.),    (0.25,  2.15),  (0.65,  2.45),
-          (0.75,  2.75),  (0.5,   2.5),   (0.5,   2.25),
-          (0.5,   2.75),  (0.25,  2.5),   (0.75,  2.25)]
+points = [(0.0, 2.1), (-0.25, 1.5), (0.25, 0.5), (-0.25, 1.25),
+          (0.75, 2.75), (0.75, 2.25), (0.0, 2.0), (1.0, 0.0),
+          (0.25, 0.15), (1.25, 1.5), (1.25, 1.25), (1.0, 2.1),
+          (0.65, 2.45), (0.25, 2.5), (0.0, 1.0), (0.5, 0.5),
+          (0.5, 0.25), (0.5, 0.75), (0, 1.25), (1.5, 1.5),
+          (1.0, 2.0), (0.25, 2.15), (1.0, 1.1), (0.75, 0.75),
+          (0.75, 0.25), (0.0, 0.0), (-0.5, 1.5), (1, 1.25),
+          (0.5, 2.5), (0.5, 2.25), (0.5, 2.75), (0.65, 0.45)]
 
 
+
+points = list(set(points))
 # Scale the points along the x-dimension
 x_scale = 1e-3
 points = np.array(points)
@@ -34,7 +30,9 @@ _, alpha_shape_unscaled = unnormalized_shaper.optimize()
 # If the characteristic scale along each axis varies significantly,
 # it may make sense to turn on the `normalize` option.
 shaper = Alpha_Shaper(points, normalize=True)
-_, alpha_shape_scaled = shaper.optimize()
+alpha_opt, alpha_shape_scaled = shaper.optimize()
+
+breakpoint()
 
 #  Compare the alpha shapes calculated with and without scaling.
 fig, (ax0, ax1, ax2) = plt.subplots(1, 3,
