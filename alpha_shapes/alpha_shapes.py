@@ -3,12 +3,12 @@ Utility module for the calculation of alpha shapes
 """
 
 from functools import wraps
+
 import numpy as np
 from matplotlib.tri import Triangulation
-from shapely.ops import unary_union
-from shapely.geometry import Polygon
-from shapely.ops import transform
 from numpy.typing import ArrayLike
+from shapely.geometry import Polygon
+from shapely.ops import transform, unary_union
 
 
 class AlphaException(Exception):
@@ -37,7 +37,7 @@ class Delaunay(Triangulation):
         try:
             super().__init__(x=self._x, y=self._y)
         except ValueError as e:
-            if 'at least 3' in str(e):
+            if "at least 3" in str(e):
                 raise NotEnoughPoints("Need at least 3 points")
             else:
                 raise
@@ -70,14 +70,17 @@ class Alpha_Shaper_Base(Delaunay):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.circumradii_sq = self._calculate_cirumradii_sq_of_internal_triangles()
+        self.circumradii_sq = (
+            self._calculate_cirumradii_sq_of_internal_triangles()
+        )
         self.argsort = np.argsort(self.circumradii_sq)
 
     def _calculate_cirumradii_sq_of_internal_triangles(self):
-        circumradii_sq = [self._get_circumradius_sq_of_internal_simplex(smpl)
-                          for smpl in self.simplices]
+        circumradii_sq = [
+            self._get_circumradius_sq_of_internal_simplex(smpl)
+            for smpl in self.simplices
+        ]
         return np.array(circumradii_sq)
-
 
     def _get_circumradius_sq_of_internal_simplex(self, smpl):
         x = self._x[smpl]
@@ -91,8 +94,7 @@ class Alpha_Shaper_Base(Delaunay):
         return self.circumradii_sq[self.argsort]
 
     def _shape_from_simplices(self, simplices):
-        triangles = [_simplex_to_triangle(smpl, self) for smpl in simplices
-                     ]
+        triangles = [_simplex_to_triangle(smpl, self) for smpl in simplices]
 
         return unary_union(triangles)
 
@@ -126,12 +128,12 @@ class Alpha_Shaper_Base(Delaunay):
     def optimize(self):
         # At least N//3 triangles are needed to connect N points.
         simplices = self._sorted_simplices()
-        n_start = len(self)//3
-        n_finish = len(self)+1
+        n_start = len(self) // 3
+        n_finish = len(self) + 1
         uncovered_vertices = self._uncovered_vertices(simplices[:n_start])
         for n in range(n_start, n_finish):
             if not uncovered_vertices:
-                alpha_opt = 1/np.sqrt(self._sorted_circumradii_sw()[n])
+                alpha_opt = 1 / np.sqrt(self._sorted_circumradii_sw()[n])
                 shape = self._shape_from_simplices(simplices[:n])
                 return alpha_opt, shape
             for vertices in simplices[n]:
@@ -146,6 +148,7 @@ def _denormalize(method):
     Applies to methods that only return geometries or geometries bunched with
     other staff in tuples (stuff,..., geometry)
     """
+
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         result = method(self, *args, **kwargs)
@@ -155,21 +158,23 @@ def _denormalize(method):
             other = []
             geom = result
         if self.normalize:
+
             def d_trasf(x, y):
                 x_out = x * self.scale[0] + self.center[0]
                 y_out = y * self.scale[1] + self.center[1]
                 return x_out, y_out
+
             geom = transform(d_trasf, geom)
 
         if other:
             return (*other, geom)
         else:
             return geom
+
     return wrapper
 
 
 class Alpha_Shaper(Alpha_Shaper_Base):
-
     def __init__(self, points, *args, normalize=True, **kwargs):
 
         self.normalize = normalize
@@ -178,7 +183,7 @@ class Alpha_Shaper(Alpha_Shaper_Base):
             points = np.copy(points)
             self.center = points.mean(axis=0)
             self.scale = np.ptp(points, axis=0)  # peak to peak distance
-            points = (points - self.center)/self.scale
+            points = (points - self.center) / self.scale
 
         super().__init__(points, *args, **kwargs)
 
@@ -191,9 +196,9 @@ class Alpha_Shaper(Alpha_Shaper_Base):
         return super().optimize(*args, **kwargs)
 
     def denormalize(self):
-        
+
         if self.normalize:
-            self.x= self.x * self.scale[0] + self.center[0]
+            self.x = self.x * self.scale[0] + self.center[0]
             self.y = self.y * self.scale[1] + self.center[1]
             self.normalize = False  # Required to avoid accidentally denomalizing multiple times
 
@@ -208,22 +213,22 @@ def _circumradius_sq(lengths):
     See: `https://en.wikipedia.org/wiki/Circumscribed_circle`
     """
     lengths = np.asarray(lengths)
-    s = np.sum(lengths)/2
+    s = np.sum(lengths) / 2
 
     num = np.prod(lengths) ** 2
 
-    denom = 16 * s * np.prod(s-lengths)
+    denom = 16 * s * np.prod(s - lengths)
 
     if denom < 1e-16:
         return np.inf
 
-    return num/denom
+    return num / denom
 
 
-def _calculate_cirumradius_sq_of_triangle(x, y):
+def _calculate_cirumradius_sq_of_triangle(x: ArrayLike, y: ArrayLike):
     """
     calculates the squared circumradius of a triangle with coordinates x, y
-    
+
     Parameters:
     -----------
     x, y: array-like, shape(3,)
@@ -236,14 +241,8 @@ def _calculate_cirumradius_sq_of_triangle(x, y):
     return _circumradius_sq(lengths)
 
 
-
-
-
-
 def _simplex_to_triangle(smpl, tri):
     x = tri.x[smpl]
     y = tri.y[smpl]
 
     return Polygon(zip(x, y))
-
-
