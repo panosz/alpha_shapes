@@ -8,6 +8,7 @@ from matplotlib.tri import Triangulation
 from shapely.ops import unary_union
 from shapely.geometry import Polygon
 from shapely.ops import transform
+from numpy.typing import ArrayLike
 
 
 class AlphaException(Exception):
@@ -29,9 +30,12 @@ class Delaunay(Triangulation):
     """
 
     def __init__(self, coords):
-        #  coords = np.unique(coords, axis=0)  # ignore duplicate points
+
+        self._x = coords[:, 0]
+        self._y = coords[:, 1]
+
         try:
-            super().__init__(x=coords[:, 0], y=coords[:, 1])
+            super().__init__(x=self._x, y=self._y)
         except ValueError as e:
             if 'at least 3' in str(e):
                 raise NotEnoughPoints("Need at least 3 points")
@@ -44,6 +48,22 @@ class Delaunay(Triangulation):
 
     def __len__(self):
         return self.simplices.shape[0]
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
 
 
 class Alpha_Shaper_Base(Delaunay):
@@ -162,10 +182,13 @@ class Alpha_Shaper(Alpha_Shaper_Base):
         return super().optimize(*args, **kwargs)
 
     def denormalize(self):
+        
         if self.normalize:
             self.x= self.x * self.scale[0] + self.center[0]
             self.y = self.y * self.scale[1] + self.center[1]
             self.normalize = False  # Required to avoid accidentally denomalizing multiple times
+
+        return self
 
 
 def _circumradius_sq(lengths):
@@ -188,6 +211,22 @@ def _circumradius_sq(lengths):
     return num/denom
 
 
+def _calculate_cirumradius_sq_of_triangle(x, y):
+    """
+    calculates the squared circumradius of a triangle with coordinates x, y
+    
+    Parameters:
+    -----------
+    x, y: array-like, shape(3,)
+        coordinates of the triangle
+    """
+    dx = x - np.roll(x, shift=-1)
+    dy = y - np.roll(y, shift=-1)
+
+    lengths = np.hypot(dx, dy)
+    return _circumradius_sq(lengths)
+
+
 def _circumradius_sq_simplex(smpl, tri):
     r"""
     Calculate the squared circumradius `r_c^2` of a simplex `smpl` in a given
@@ -197,12 +236,8 @@ def _circumradius_sq_simplex(smpl, tri):
     """
     x = tri.x[smpl]
     y = tri.y[smpl]
+    return _calculate_cirumradius_sq_of_coordinates(x, y)
 
-    dx = x - np.roll(x, shift=-1)
-    dy = y - np.roll(y, shift=-1)
-
-    lengths = np.hypot(dx, dy)
-    return _circumradius_sq(lengths)
 
 
 def _simplex_to_triangle(smpl, tri):
