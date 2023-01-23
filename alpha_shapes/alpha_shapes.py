@@ -69,11 +69,20 @@ class Delaunay(Triangulation):
 class Alpha_Shaper_Base(Delaunay):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        circumradii_sq = [_circumradius_sq_simplex(smpl, self)
-                          for smpl in self.simplices]
 
-        self.circumradii_sq = np.array(circumradii_sq)
+        self.circumradii_sq = self._calculate_cirumradii_sq_of_internal_triangles()
         self.argsort = np.argsort(self.circumradii_sq)
+
+    def _calculate_cirumradii_sq_of_internal_triangles(self):
+        circumradii_sq = [self._get_circumradius_sq_of_internal_simplex(smpl)
+                          for smpl in self.simplices]
+        return np.array(circumradii_sq)
+
+
+    def _get_circumradius_sq_of_internal_simplex(self, smpl):
+        x = self._x[smpl]
+        y = self._y[smpl]
+        return _calculate_cirumradius_sq_of_triangle(x, y)
 
     def _sorted_simplices(self):
         return self.simplices[self.argsort]
@@ -227,16 +236,7 @@ def _calculate_cirumradius_sq_of_triangle(x, y):
     return _circumradius_sq(lengths)
 
 
-def _circumradius_sq_simplex(smpl, tri):
-    r"""
-    Calculate the squared circumradius `r_c^2` of a simplex `smpl` in a given
-    triangulation `tri`, where
-    r_c = \frac {abc}{4{\sqrt {s(s-a)(s-b)(s-c)}}}
-    See: `https://en.wikipedia.org/wiki/Circumscribed_circle`
-    """
-    x = tri.x[smpl]
-    y = tri.y[smpl]
-    return _calculate_cirumradius_sq_of_coordinates(x, y)
+
 
 
 
