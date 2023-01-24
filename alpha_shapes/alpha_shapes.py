@@ -6,7 +6,7 @@ from functools import wraps
 
 import numpy as np
 from matplotlib.tri import Triangulation
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 from shapely.geometry import Polygon
 from shapely.ops import transform, unary_union
 
@@ -29,13 +29,10 @@ class Delaunay(Triangulation):
     Mimics scipy.spatial.Delaunay interface.
     """
 
-    def __init__(self, coords):
-
-        self._x = coords[:, 0]
-        self._y = coords[:, 1]
+    def __init__(self, coords: NDArray):
 
         try:
-            super().__init__(x=self._x, y=self._y)
+            super().__init__(x=coords[:, 0], y=coords[:, 1])
         except ValueError as e:
             if "at least 3" in str(e):
                 raise NotEnoughPoints("Need at least 3 points")
@@ -49,31 +46,28 @@ class Delaunay(Triangulation):
     def __len__(self):
         return self.simplices.shape[0]
 
-    @property
-    def x(self):
-        return self._x
 
-    @x.setter
-    def x(self, value):
-        self._x = value
+class Alpha_Shaper(Delaunay):
+    def __init__(self, points: NDArray, normalize=False):
 
-    @property
-    def y(self):
-        return self._y
+        self.normalized = normalize
 
-    @y.setter
-    def y(self, value):
-        self._y = value
+        if self.normalized:
+            points, center, scale = _normalize_points(points)
 
-
-class Alpha_Shaper_Base(Delaunay):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(points)
 
         self.circumradii_sq = (
             self._calculate_cirumradii_sq_of_internal_triangles()
         )
         self.argsort = np.argsort(self.circumradii_sq)
+
+        if self.normalized:
+            self._denormalize(center, scale)
+
+    def _denormalize(self, center, scale):
+        self.x = self.x * scale[0] + center[0]
+        self.y = self.y * scale[1] + center[1]
 
     def _calculate_cirumradii_sq_of_internal_triangles(self):
         circumradii_sq = [
@@ -83,8 +77,8 @@ class Alpha_Shaper_Base(Delaunay):
         return np.array(circumradii_sq)
 
     def _get_circumradius_sq_of_internal_simplex(self, smpl):
-        x = self._x[smpl]
-        y = self._y[smpl]
+        x = self.x[smpl]
+        y = self.y[smpl]
         return _calculate_cirumradius_sq_of_triangle(x, y)
 
     def _sorted_simplices(self):
@@ -142,67 +136,31 @@ class Alpha_Shaper_Base(Delaunay):
         raise OptimizationFailure()
 
 
-def _denormalize(method):
+def _normalize_points(points: NDArray):
     """
-    decorator for denormalizing geometries, if needed.
-    Applies to methods that only return geometries or geometries bunched with
-    other staff in tuples (stuff,..., geometry)
+    Normalize points to the unit square, centered at the origin.
+
+    Parameters:
+    -----------
+    points: array-like, shape(N,2)
+        coordinates of the points
+
+    Returns:
+    --------
+    points: array, shape(N,2)
+        normalized coordinates of the points
+
+    center: array, shape(2,)
+        coordinates of the center of the points
+
+    scale: array, shape(2,)
+        scale factors for the normalization
     """
+    center = points.mean(axis=0)
+    scale = np.ptp(points, axis=0)  # peak to peak distance
+    normalized_points = (points - center) / scale
 
-    @wraps(method)
-    def wrapper(self, *args, **kwargs):
-        result = method(self, *args, **kwargs)
-        if isinstance(result, tuple):
-            *other, geom = result
-        else:
-            other = []
-            geom = result
-        if self.normalize:
-
-            def d_trasf(x, y):
-                x_out = x * self.scale[0] + self.center[0]
-                y_out = y * self.scale[1] + self.center[1]
-                return x_out, y_out
-
-            geom = transform(d_trasf, geom)
-
-        if other:
-            return (*other, geom)
-        else:
-            return geom
-
-    return wrapper
-
-
-class Alpha_Shaper(Alpha_Shaper_Base):
-    def __init__(self, points, *args, normalize=True, **kwargs):
-
-        self.normalize = normalize
-
-        if self.normalize:
-            points = np.copy(points)
-            self.center = points.mean(axis=0)
-            self.scale = np.ptp(points, axis=0)  # peak to peak distance
-            points = (points - self.center) / self.scale
-
-        super().__init__(points, *args, **kwargs)
-
-    @_denormalize
-    def get_shape(self, *args, **kwargs):
-        return super().get_shape(*args, **kwargs)
-
-    @_denormalize
-    def optimize(self, *args, **kwargs):
-        return super().optimize(*args, **kwargs)
-
-    def denormalize(self):
-
-        if self.normalize:
-            self.x = self.x * self.scale[0] + self.center[0]
-            self.y = self.y * self.scale[1] + self.center[1]
-            self.normalize = False  # Required to avoid accidentally denomalizing multiple times
-
-        return self
+    return normalized_points, center, scale
 
 
 def _circumradius_sq(lengths):
