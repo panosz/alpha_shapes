@@ -125,7 +125,7 @@ class Alpha_Shaper(Delaunay):
         # At least N//3 triangles are needed to connect N points.
         simplices = self._sorted_simplices()
         n_start = len(self) // 3
-        n_finish = len(self) + 1
+        n_finish = len(self)
         uncovered_vertices = self._uncovered_vertices(simplices[:n_start])
         for n in range(n_start, n_finish):
             if not uncovered_vertices:
