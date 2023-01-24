@@ -133,11 +133,13 @@ class Alpha_Shaper(Delaunay):
                 shape = self._shape_from_simplices(simplices[:n])
                 self.set_mask_at_alpha(alpha_opt)
                 return alpha_opt, shape
-            for vertices in simplices[n]:
+
+            simplex = simplices[n]
+            for vertices in simplex:
                 uncovered_vertices.discard(vertices)
 
         raise OptimizationFailure()
-    
+
     def set_mask_at_alpha(self, alpha: float):
         """
         Set the mask for the alpha shape at the specified alpha value.
