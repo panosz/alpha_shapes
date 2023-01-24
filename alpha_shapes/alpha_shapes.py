@@ -48,7 +48,7 @@ class Delaunay(Triangulation):
 
 
 class Alpha_Shaper(Delaunay):
-    def __init__(self, points: NDArray, normalize=False):
+    def __init__(self, points: NDArray, normalize=True):
 
         self.normalized = normalize
 

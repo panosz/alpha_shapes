@@ -46,7 +46,7 @@ points = [
 points = list(set(points))
 
 #  Calculate the optimal alpha shape
-shaper = Alpha_Shaper(points)
+shaper = Alpha_Shaper(points, normalize=False)
 alpha_opt, shape = shaper.optimize()
 print(alpha_opt)
 
