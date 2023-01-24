@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from plotting import plot_alpha_shape
 
-from alpha_shapes import Alpha_Shaper
+from alpha_shapes import Alpha_Shaper, plot_alpha_shape
 
 #  Define a set of points
 
