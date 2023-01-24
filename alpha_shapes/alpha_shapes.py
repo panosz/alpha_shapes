@@ -131,6 +131,7 @@ class Alpha_Shaper(Delaunay):
             if not uncovered_vertices:
                 alpha_opt = 1 / np.sqrt(self._sorted_circumradii_sw()[n])
                 shape = self._shape_from_simplices(simplices[:n])
+                self.set_mask_at_alpha(alpha_opt)
                 return alpha_opt, shape
             for vertices in simplices[n]:
                 uncovered_vertices.discard(vertices)

@@ -34,7 +34,7 @@ z = x**2 * np.cos(x * y)
 shaper = Alpha_Shaper(points, normalize=True)
 alpha_opt, alpha_shape_scaled = shaper.optimize()
 
-mask = shaper.set_mask_at_alpha(alpha_opt)
+#  mask = shaper.set_mask_at_alpha(alpha_opt)
 
 fig, ax = plt.subplots()
 
