@@ -136,6 +136,14 @@ class Alpha_Shaper(Delaunay):
                 uncovered_vertices.discard(vertices)
 
         raise OptimizationFailure()
+    
+    def set_mask_at_alpha(self, alpha: float):
+        """
+        Set the mask for the alpha shape at the specified alpha value.
+        """
+        mask = self.get_mask(alpha)
+        self.set_mask(mask)
+        return self
 
 
 def _normalize_points(points: NDArray):
