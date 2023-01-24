@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from plotting import plot_alpha_shape
 
-from alpha_shapes.alpha_shapes import Alpha_Shaper
+from alpha_shapes import Alpha_Shaper
 
 #  Define a set of points
 

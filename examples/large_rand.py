@@ -1,7 +1,7 @@
 from time import time
 import numpy as np
 import matplotlib.pyplot as plt
-from alpha_shapes.alpha_shapes import Alpha_Shaper
+from alpha_shapes import Alpha_Shaper
 from plotting import plot_alpha_shape
 
 #  Define a set of random points
