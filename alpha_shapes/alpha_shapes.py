@@ -52,6 +52,8 @@ class Alpha_Shaper(Delaunay):
 
         self.normalized = normalize
 
+        points = np.array(points)
+
         if self.normalized:
             points, center, scale = _normalize_points(points)
 
