@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from plotting import plot_alpha_shape
 
 from alpha_shapes.alpha_shapes import Alpha_Shaper
 
@@ -58,13 +59,7 @@ ax0.set_title("data")
 ax1.scatter(*zip(*points))
 
 
-def plot_multipolygon(ax, multipolygon):
-    for p in multipolygon.geoms:
-        xe, ye = p.exterior.xy
-        ax.fill(xe, ye, alpha=0.2, fc="r", ec="b")
-
-
-plot_multipolygon(ax1, shape)
+plot_alpha_shape(ax1, shape)
 ax1.set_title("alpha shape")
 for ax in (ax0, ax1):
     ax.set_axis_off()

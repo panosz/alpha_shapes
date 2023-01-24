@@ -1,8 +1,8 @@
 from time import time
-from descartes import PolygonPatch
 import numpy as np
 import matplotlib.pyplot as plt
 from alpha_shapes.alpha_shapes import Alpha_Shaper
+from plotting import plot_alpha_shape
 
 #  Define a set of random points
 points = np.random.random((1000, 2))
@@ -32,7 +32,7 @@ for ax in axs:
 
 axs[0].set_title('data')
 
-axs[1].add_patch(PolygonPatch(alpha_shape, alpha=0.2, color='r'))
+plot_alpha_shape(axs[1], alpha_shape)
 axs[1].set_title(r'$\alpha_{\mathrm{opt}}$')
 
 # Calculate the shape for greater than optimal alpha
@@ -53,9 +53,9 @@ for ax in axs:
 
 axs[0].set_title('data')
 
-axs[1].add_patch(PolygonPatch(alpha_shape, alpha=0.2, color='r'))
+plot_alpha_shape(axs[1], alpha_shape)
 axs[1].set_title(r'$\alpha_{\mathrm{opt}}$')
-axs[2].add_patch(PolygonPatch(alpha_sub_opt, alpha=0.2, color='r'))
+plot_alpha_shape(axs[2], alpha_sub_opt)
 axs[2].set_title(r'$1.5\ \alpha_{\mathrm{opt}}$')
 
 

@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from plotting import plot_alpha_shape
 
 from alpha_shapes.alpha_shapes import Alpha_Shaper
 
@@ -67,18 +68,11 @@ ax0.set_title("data")
 ax1.scatter(*zip(*points))
 ax2.scatter(*zip(*points))
 
-
-def plot_multipolygon(ax, multipolygon):
-    for p in multipolygon.geoms:
-        xe, ye = p.exterior.xy
-        ax.fill(xe, ye, alpha=0.2, fc="r", ec="b")
-
-
-plot_multipolygon(ax1, alpha_shape_scaled)
+plot_alpha_shape(ax1, alpha_shape_scaled)
 
 ax1.set_title("with normalization")
 ax2.set_title("without normalization")
-plot_multipolygon(ax2, alpha_shape_unscaled)
+plot_alpha_shape(ax2, alpha_shape_unscaled)
 
 for ax in (ax1, ax2):
     ax.set_axis_off()

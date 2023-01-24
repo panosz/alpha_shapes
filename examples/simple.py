@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from descartes import PolygonPatch
+from plotting import plot_alpha_shape
 from alpha_shapes.alpha_shapes import Alpha_Shaper
 
 #  Define a set of points
@@ -12,7 +12,7 @@ points = [(0.,     0.),    (0.,    1.),    (1.,     1.1),
           (0.5,    2.5),   (-0.5,  1.5),   (-0.25,  1.5),
           (-0.25,  1.25),  (0,     1.25),  (1.5,    1.5),
           (1.25,   1.5),   (1.25,  1.25),  (1,      1.25),
-          (0.5,    2.25),  (1.,    2.),    (0.25,   2.15),
+          (1.,    2.),    (0.25,   2.15),
           (0.65,   2.45),  (0.75,  2.75),  (0.5,    2.25),
           (0.5,    2.75),  (0.25,  2.5),   (0.75,   2.25)]
 
@@ -28,7 +28,7 @@ fig, (ax0, ax1) = plt.subplots(1, 2)
 ax0.scatter(*zip(*points))
 ax0.set_title('data')
 ax1.scatter(*zip(*points))
-ax1.add_patch(PolygonPatch(alpha_shape, alpha=0.2, color='r'))
+plot_alpha_shape(ax1, alpha_shape)
 ax1.set_title(f"$\\alpha={alpha:.3}$")
 
 for ax in (ax0, ax1):
@@ -42,7 +42,7 @@ fig, (ax0, ax1) = plt.subplots(1, 2)
 ax0.scatter(*zip(*points))
 ax0.set_title('data')
 ax1.scatter(*zip(*points))
-ax1.add_patch(PolygonPatch(alpha_shape, alpha=0.2, color='r'))
+plot_alpha_shape(ax1, alpha_shape)
 ax1.set_title(f"$\\alpha={alpha:.3}$")
 
 for ax in (ax0, ax1):
@@ -56,7 +56,7 @@ fig, (ax0, ax1) = plt.subplots(1, 2)
 ax0.scatter(*zip(*points))
 ax0.set_title('data')
 ax1.scatter(*zip(*points))
-ax1.add_patch(PolygonPatch(alpha_shape, alpha=0.2, color='r'))
+plot_alpha_shape(ax1, alpha_shape)
 ax1.set_title(f"$\\alpha={alpha_opt:.3}$")
 
 for ax in (ax0, ax1):
