@@ -11,7 +11,10 @@ points = np.random.random((1000, 2))
 x = points[:, 0]
 y = points[:, 1]
 
-z = x**2 * np.cos(x * y)
+
+z = x**2 * np.cos(5 * x * y - 8 * x + 9 * y) + y**2 * np.sin(
+    5 * x * y - 8 * x + 9 * y
+)
 
 # If the characteristic scale along each axis varies significantly,
 # it may make sense to turn on the `normalize` option.
@@ -25,5 +28,6 @@ fig, ax = plt.subplots()
 ax.tricontourf(shaper, z)
 ax.triplot(shaper)
 ax.plot(x, y, ".k", markersize=2)
+ax.set_aspect("equal")
 
 plt.show()
