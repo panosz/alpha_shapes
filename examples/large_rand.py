@@ -32,6 +32,7 @@ for ax in axs:
 axs[0].set_title('data')
 
 plot_alpha_shape(axs[1], alpha_shape)
+axs[1].triplot(alpha_shaper)
 axs[1].set_title(r'$\alpha_{\mathrm{opt}}$')
 
 # Calculate the shape for greater than optimal alpha
