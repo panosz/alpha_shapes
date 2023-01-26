@@ -2,7 +2,7 @@
 Utility module for the calculation of alpha shapes
 """
 
-from functools import wraps
+import warnings
 
 import numpy as np
 from matplotlib.tri import Triangulation
@@ -20,6 +20,10 @@ class NotEnoughPoints(AlphaException):
 
 
 class OptimizationFailure(AlphaException):
+    pass
+
+
+class OptimizationWarnging(UserWarning):
     pass
 
 
@@ -121,24 +125,39 @@ class Alpha_Shaper(Delaunay):
         n_points = self.x.size
         return set(range(n_points)) - set(np.ravel(simplices))
 
-    def optimize(self):
+    def _get_minimum_fully_covering_index_of_simplices(self):
+        """
+        Return the minimum index of simplices needed to cover all vertices.
+        The set of all simplices up to this index is fully covering.
+        """
         # At least N//3 triangles are needed to connect N points.
         simplices = self._sorted_simplices()
         n_start = len(self) // 3
         n_finish = len(self)
         uncovered_vertices = self._uncovered_vertices(simplices[:n_start])
+        if not uncovered_vertices:
+            return n_start
+
         for n in range(n_start, n_finish):
-            if not uncovered_vertices:
-                alpha_opt = 1 / np.sqrt(self._sorted_circumradii_sw()[n])
-                shape = self._shape_from_simplices(simplices[:n])
-                self.set_mask_at_alpha(alpha_opt)
-                return alpha_opt, shape
-
             simplex = simplices[n]
-            for vertices in simplex:
-                uncovered_vertices.discard(vertices)
+            uncovered_vertices -= set(simplex)
 
-        raise OptimizationFailure()
+            if not uncovered_vertices:
+                return n
+
+        if uncovered_vertices:
+            raise OptimizationFailure("Maybe there are duplicate points?")
+
+    def optimize(self):
+        # At least N//3 triangles are needed to connect N points.
+        n_min = self._get_minimum_fully_covering_index_of_simplices()
+        print(n_min)
+        print(f"{len(self)=}")
+        alpha_opt = 1 / np.sqrt(self._sorted_circumradii_sw()[n_min]) - 1e-10
+        simplices = self._sorted_simplices()
+        shape = self._shape_from_simplices(simplices[: n_min + 1])
+        self.set_mask_at_alpha(alpha_opt)
+        return alpha_opt, shape
 
     def set_mask_at_alpha(self, alpha: float):
         """

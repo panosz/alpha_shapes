@@ -56,7 +56,7 @@ ax0.scatter(*zip(*points))
 ax0.set_title('data')
 ax1.scatter(*zip(*points))
 plot_alpha_shape(ax1, alpha_shape)
-ax1.set_title(f"$\\alpha={alpha_opt:.3}$")
+ax1.set_title(f"$\\alpha_{{\\mathrm{{opt}}}}={alpha_opt:.3}$")
 
 for ax in (ax0, ax1):
     ax.set_aspect('equal')
