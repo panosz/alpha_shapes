@@ -3,8 +3,9 @@ import numpy as np
 
 from alpha_shapes import Alpha_Shaper
 
-#  Define a set of points
+np.random.seed(42)  # for reproducibility
 
+#  Define a set of points
 points = np.random.random((1000, 2))
 
 x = points[:, 0]
