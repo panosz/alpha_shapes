@@ -40,8 +40,6 @@ points = [
     (0.65, 0.45),
 ]
 
-
-points = list(set(points))
 # Scale the points along the x-dimension
 x_scale = 1e-3
 points = np.array(points)
