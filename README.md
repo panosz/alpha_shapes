@@ -80,12 +80,12 @@ for ax in (ax0, ax1):
     
 
 
-Good results depend on a successful choise for the value of `alpha`. If for example we choose a sligtly smaller value, e.g. $\alpha = 4.8$:
+Good results depend on a successful choise for the value of `alpha`. If for example we choose a smaller value, e.g. $\alpha = 3.7$:
 
 
 ```python
 # Calculate the shape for smaller alpha
-alpha = 4.8
+alpha = 3.7
 alpha_shape = shaper.get_shape(alpha=alpha)
 
 fig, (ax0, ax1) = plt.subplots(1, 2)
@@ -148,7 +148,7 @@ alpha_opt
 
 
 
-    5.331459512629298
+    5.391419185032161
 
 
 
@@ -215,7 +215,7 @@ _ = axs[1].set_title(r'$\alpha_{\mathrm{opt}}$')
 
 ```
 
-    optimization took: 0.087 sec
+    optimization took: 0.081 sec
 
 
 
