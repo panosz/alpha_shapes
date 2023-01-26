@@ -50,7 +50,7 @@ shaper = Alpha_Shaper(points)
 ```
 
 For the alpha shape to be calculated, the user must choose a value for the `alpha` parameter.
-Here, let us set `alpha` to 3.0:
+Here, let us set `alpha` to 5.3:
 
 
 ```python
@@ -215,7 +215,7 @@ _ = axs[1].set_title(r'$\alpha_{\mathrm{opt}}$')
 
 ```
 
-    optimization took: 0.085 sec
+    optimization took: 0.087 sec
 
 
 
