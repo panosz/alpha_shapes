@@ -151,8 +151,6 @@ class Alpha_Shaper(Delaunay):
     def optimize(self):
         # At least N//3 triangles are needed to connect N points.
         n_min = self._get_minimum_fully_covering_index_of_simplices()
-        print(n_min)
-        print(f"{len(self)=}")
         alpha_opt = 1 / np.sqrt(self._sorted_circumradii_sw()[n_min]) - 1e-10
         simplices = self._sorted_simplices()
         shape = self._shape_from_simplices(simplices[: n_min + 1])
