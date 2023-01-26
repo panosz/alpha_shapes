@@ -6,3 +6,4 @@ dist/
 .test_token.txt
 .token.txt
 __pycache__
+.ipynb_checkpoints/
