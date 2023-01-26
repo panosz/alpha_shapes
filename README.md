@@ -178,6 +178,7 @@ The optimize method runs efficiently for relatively large point clouds. Here we 
 from time import time
 import numpy as np
 
+np.random.seed(42)  # for reproducibility
 
 #  Define a set of random points
 points = np.random.random((1000, 2))
@@ -223,7 +224,131 @@ _ = axs[1].set_title(r'$\alpha_{\mathrm{opt}}$')
     
 
 
+### used as triangulation
+
+The Alpha_Shaper class implements the interface of matplotlib.tri.Triangulation. This means that it will work with algorithms that expect a triangulation as input (e.g. for contour plotting or interpolation)
+
 
 ```python
+#  Define a set of points
+
+np.random.seed(42)  # for reproducibility
+
+points = np.random.random((1000, 2))
+
+x = points[:, 0]
+y = points[:, 1]
+
+z = x**2 * np.cos(5 * x * y - 8 * x + 9*y) + y**2 * np.sin(5 * x * y - 8 * x + 9*y)
+
+# If the characteristic scale along each axis varies significantly,
+# it may make sense to turn on the `normalize` option.
+shaper = Alpha_Shaper(points, normalize=True)
+alpha_opt, alpha_shape_scaled = shaper.optimize()
+
+#  mask = shaper.set_mask_at_alpha(alpha_opt)
+
+fig, ax = plt.subplots()
+
+ax.tricontourf(shaper, z)
+ax.triplot(shaper)
+ax.plot(x, y, ".k", markersize=2)
+ax.set_aspect('equal')
 
 ```
+
+
+    
+![png](README_files/README_22_0.png)
+    
+
+
+###  Normalization
+Before calculating the alpha shape, Alpha_Shaper normalizes by default the input points so that they are distributed on the unit square. When there is a scale separation along the x and y direction, deactivating this feature may yield surprising results.
+
+
+```python
+#  Define a set of points
+points = [
+    (0.0, 2.1),
+    (-0.25, 1.5),
+    (0.25, 0.5),
+    (-0.25, 1.25),
+    (0.75, 2.75),
+    (0.75, 2.25),
+    (0.0, 2.0),
+    (1.0, 0.0),
+    (0.25, 0.15),
+    (1.25, 1.5),
+    (1.25, 1.25),
+    (1.0, 2.1),
+    (0.65, 2.45),
+    (0.25, 2.5),
+    (0.0, 1.0),
+    (0.5, 0.5),
+    (0.5, 0.25),
+    (0.5, 0.75),
+    (0, 1.25),
+    (1.5, 1.5),
+    (1.0, 2.0),
+    (0.25, 2.15),
+    (1.0, 1.1),
+    (0.75, 0.75),
+    (0.75, 0.25),
+    (0.0, 0.0),
+    (-0.5, 1.5),
+
+    (1, 1.25),
+    (0.5, 2.5),
+    (0.5, 2.25),
+    (0.5, 2.75),
+    (0.65, 0.45),
+]
+
+# Scale the points along the x-dimension
+x_scale = 1e-3
+points = np.array(points)
+points[:, 0] *= x_scale
+
+#  Create the alpha shape without accounting for the x and y scale separation
+unnormalized_shaper = Alpha_Shaper(points, normalize=False)
+_, alpha_shape_unscaled = unnormalized_shaper.optimize()
+
+
+# If the characteristic scale along each axis varies significantly,
+# it may make sense to turn on the `normalize` option.
+shaper = Alpha_Shaper(points, normalize=True)
+alpha_opt, alpha_shape_scaled = shaper.optimize()
+
+
+#  Compare the alpha shapes calculated with and without scaling.
+fig, (ax0, ax1, ax2) = plt.subplots(
+    1, 3, sharey=True, sharex=True, constrained_layout=True
+)
+ax0.scatter(*zip(*points))
+ax0.set_title("data")
+ax1.scatter(*zip(*points))
+ax2.scatter(*zip(*points))
+
+plot_alpha_shape(ax1, alpha_shape_scaled)
+
+ax1.set_title("with normalization")
+ax2.set_title("without normalization")
+plot_alpha_shape(ax2, alpha_shape_unscaled)
+
+for ax in (ax1, ax2):
+    ax.set_axis_off()
+for ax in (ax0, ax1, ax2):
+    ax.set_aspect(x_scale)
+
+```
+
+
+    
+![png](README_files/README_24_0.png)
+    
+
+
+##  Inspiration
+
+This library is inspired by the [alphashape](https://github.com/bellockk/alphashape) library.
