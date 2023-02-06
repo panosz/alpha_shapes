@@ -117,13 +117,16 @@ class Alpha_Shaper(Delaunay):
         simplices = self._sorted_simplices()[:n]
         return self._shape_from_simplices(simplices)
 
+    def all_vertices(self):
+        return set(np.ravel(self.simplices))
+
     def _uncovered_vertices(self, simplices):
         """
         Return a set of vertices that is not covered by the
         specified simplices.
         """
         n_points = self.x.size
-        return set(range(n_points)) - set(np.ravel(simplices))
+        return self.all_vertices() - set(np.ravel(simplices))
 
     def _get_minimum_fully_covering_index_of_simplices(self):
         """
