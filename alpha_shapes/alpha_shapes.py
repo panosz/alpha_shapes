@@ -2,6 +2,7 @@
 Utility module for the calculation of alpha shapes
 """
 
+from numpy.typing import ArrayLike
 import warnings
 
 import numpy as np
@@ -52,7 +53,7 @@ class Delaunay(Triangulation):
 
 
 class Alpha_Shaper(Delaunay):
-    def __init__(self, points: NDArray, normalize=True):
+    def __init__(self, points: ArrayLike, normalize=True):
 
         self.normalized = normalize
 
