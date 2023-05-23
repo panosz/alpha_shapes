@@ -45,21 +45,23 @@ def dataset_issue_3() -> pd.DataFrame:
 
     df = pd.read_csv(datafile)
 
-    return df.drop_duplicates()
+    return df.drop_duplicates()   # type: ignore
 
 
 class TestAlphaShaperIssue3:
     def test_optimization_with_possibly_missing_points(self, dataset_issue_3):
         """
-        Test with a dataset for which a naive implementation
+        Test with a dataset for which the triangulation may not cover all vertices.
+        A naive implementation would raise an error.
         issue #3
         """
         shaper = Alpha_Shaper(dataset_issue_3)
-        alpha_opt, alpha_shape = shaper.optimize()
+        _ = shaper.optimize()
 
-    def test_all_points_are_in_triangulation(self, dataset_issue_3):
+    def test_some_points_are_missing_from_triangulation(self, dataset_issue_3):
         """
-        Test that all points are covered by the alpha shape
+        Test that indeed some points are not included as vertices
+        issue #3
         """
         shaper = Alpha_Shaper(dataset_issue_3)
 
@@ -67,4 +69,4 @@ class TestAlphaShaperIssue3:
             np.ravel(shaper.simplices)
         )
 
-        assert len(all_uncovered_vertices) == 0
+        assert len(all_uncovered_vertices) != 0

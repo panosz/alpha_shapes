@@ -3,7 +3,6 @@ Utility module for the calculation of alpha shapes
 """
 
 from numpy.typing import ArrayLike
-import warnings
 
 import numpy as np
 from matplotlib.tri import Triangulation
