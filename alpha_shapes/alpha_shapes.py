@@ -1,6 +1,7 @@
 """
 Utility module for the calculation of alpha shapes
 """
+from typing import Tuple
 
 import numpy as np
 from matplotlib.tri import Triangulation
@@ -84,7 +85,7 @@ class Alpha_Shaper(Delaunay):
     def _sorted_simplices(self):
         return self.simplices[self.argsort]
 
-    def _sorted_circumradii_sw(self):
+    def _sorted_circumradii_sw(self) -> NDArray[np.float64]:
         return self.circumradii_sq[self.argsort]
 
     def _shape_from_simplices(self, simplices):
@@ -121,7 +122,7 @@ class Alpha_Shaper(Delaunay):
         """
         return self.all_vertices() - set(np.ravel(simplices))
 
-    def _get_minimum_fully_covering_index_of_simplices(self):
+    def _get_minimum_fully_covering_index_of_simplices(self) -> int:
         """
         Return the minimum index of simplices needed to cover all vertices.
         The set of all simplices up to this index is fully covering.
@@ -141,8 +142,7 @@ class Alpha_Shaper(Delaunay):
             if not uncovered_vertices:
                 return n
 
-        if uncovered_vertices:
-            raise OptimizationFailure("Maybe there are duplicate points?")
+        raise OptimizationFailure("Maybe there are duplicate points?")
 
     def optimize(self):
         # At least N//3 triangles are needed to connect N points.
@@ -162,7 +162,7 @@ class Alpha_Shaper(Delaunay):
         return self
 
 
-def _normalize_points(points: NDArray):
+def _normalize_points(points: NDArray) -> Tuple[NDArray, NDArray, NDArray]:
     """
     Normalize points to the unit square, centered at the origin.
 
