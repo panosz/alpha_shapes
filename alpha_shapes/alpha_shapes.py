@@ -2,13 +2,11 @@
 Utility module for the calculation of alpha shapes
 """
 
-import warnings
-
 import numpy as np
 from matplotlib.tri import Triangulation
 from numpy.typing import ArrayLike, NDArray
 from shapely.geometry import Polygon
-from shapely.ops import transform, unary_union
+from shapely.ops import unary_union
 
 
 class AlphaException(Exception):
@@ -34,7 +32,6 @@ class Delaunay(Triangulation):
     """
 
     def __init__(self, coords: NDArray):
-
         try:
             super().__init__(x=coords[:, 0], y=coords[:, 1])
         except ValueError as e:
@@ -52,8 +49,7 @@ class Delaunay(Triangulation):
 
 
 class Alpha_Shaper(Delaunay):
-    def __init__(self, points: NDArray, normalize=True):
-
+    def __init__(self, points: ArrayLike, normalize=True):
         self.normalized = normalize
 
         points = np.array(points)
@@ -63,9 +59,7 @@ class Alpha_Shaper(Delaunay):
 
         super().__init__(points)
 
-        self.circumradii_sq = (
-            self._calculate_cirumradii_sq_of_internal_triangles()
-        )
+        self.circumradii_sq = self._calculate_cirumradii_sq_of_internal_triangles()
         self.argsort = np.argsort(self.circumradii_sq)
 
         if self.normalized:
@@ -125,7 +119,6 @@ class Alpha_Shaper(Delaunay):
         Return a set of vertices that is not covered by the
         specified simplices.
         """
-        n_points = self.x.size
         return self.all_vertices() - set(np.ravel(simplices))
 
     def _get_minimum_fully_covering_index_of_simplices(self):
