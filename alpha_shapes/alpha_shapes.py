@@ -1,5 +1,6 @@
 """
-Utility module for the calculation of alpha shapes
+This is a core module of package, which contains exceptions, functions
+and classes essential to printing figures.
 """
 
 import numpy as np
@@ -10,28 +11,37 @@ from shapely.ops import unary_union
 
 
 class AlphaException(Exception):
+    """Abstract class for all exceptions which will be raised within Alpha_Shaper class
+     directly or through Delaunay class"""
     pass
 
 
 class NotEnoughPoints(AlphaException):
+    """If instance of class Delaunay has less than 3 points, this exception will be raised"""
     pass
 
 
 class OptimizationFailure(AlphaException):
+    """If Alpha_Shaper instance can't cover all vertices, this exception will be raised"""
     pass
 
 
-class OptimizationWarnging(UserWarning):
+class OptimizationWarning(UserWarning):
+    """Warns user without interrupting the program"""
     pass
 
 
 class Delaunay(Triangulation):
     """
-    Visitor sublclass of matplotlib.tri.Triangulation.
-    Mimics scipy.spatial.Delaunay interface.
+    Delaunay is abstract class, which derives from matplotlib.tri.Triangulation.
+    It adds set of coordinates and essential methods.
     """
 
     def __init__(self, coords: NDArray):
+        """In try block function invokes __init__ method of class
+        Triangulation from matplotlib package and sends
+        to it default set of coordinates. If ValueError occurs,
+        function will tackle it."""
         try:
             super().__init__(x=coords[:, 0], y=coords[:, 1])
         except ValueError as e:
@@ -42,9 +52,11 @@ class Delaunay(Triangulation):
 
     @property
     def simplices(self):
+        """Creates simplices property essential to further operations"""
         return self.triangles
 
     def __len__(self):
+        """Returns amount of object's edges"""
         return self.simplices.shape[0]
 
 
