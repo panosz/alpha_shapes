@@ -57,14 +57,20 @@ class Alpha_Shaper(Delaunay):
 
         if self.normalized:
             points, center, scale = _normalize_points(points)
+            self._initialize(points)
+            self._denormalize(center, scale)
 
+        else:
+            self._initialize(points)
+
+    def _initialize(self, points: NDArray):
+        """
+        _initialize the alpha shaper.
+        """
         super().__init__(points)
 
         self.circumradii_sq = self._calculate_cirumradii_sq_of_internal_triangles()
         self.argsort = np.argsort(self.circumradii_sq)
-
-        if self.normalized:
-            self._denormalize(center, scale)
 
     def _denormalize(self, center, scale):
         self.x = self.x * scale[0] + center[0]
