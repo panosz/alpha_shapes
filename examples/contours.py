@@ -1,3 +1,5 @@
+from typing import cast
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -24,6 +26,7 @@ alpha_opt, alpha_shape_scaled = shaper.optimize()
 #  mask = shaper.set_mask_at_alpha(alpha_opt)
 
 fig, ax = plt.subplots()
+ax = cast(plt.Axes, ax)
 
 ax.tricontourf(shaper, z)
 ax.triplot(shaper)

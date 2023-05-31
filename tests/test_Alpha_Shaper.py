@@ -26,7 +26,7 @@ def test_optimization_with_strongly_shaped_points():
         (363828.75, 5771906.28),
     ]
     shaper = Alpha_Shaper(points)
-    alpha_opt, alpha_shape = shaper.optimize()
+    shaper.optimize()
 
     # check that no simplex is masked
     not_masked = np.logical_not(shaper.mask)
