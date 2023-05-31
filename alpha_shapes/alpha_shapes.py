@@ -50,6 +50,8 @@ class Delaunay(Triangulation):
 
 
 class Alpha_Shaper(Delaunay):
+    mask: NDArray  # for type hinting
+
     def __init__(self, points: ArrayLike, normalize=True):
         self.normalized = normalize
 
@@ -71,6 +73,8 @@ class Alpha_Shaper(Delaunay):
 
         self.circumradii_sq = self._calculate_cirumradii_sq_of_internal_triangles()
         self.argsort = np.argsort(self.circumradii_sq)
+        default_mask = np.full_like(self.circumradii_sq, False, dtype=bool)
+        self.set_mask(default_mask)
 
     def _denormalize(self, center, scale):
         self.x = self.x * scale[0] + center[0]
