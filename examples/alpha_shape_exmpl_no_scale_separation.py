@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 from alpha_shapes import Alpha_Shaper, plot_alpha_shape
 
