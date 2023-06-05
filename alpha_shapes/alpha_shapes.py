@@ -169,7 +169,7 @@ class Alpha_Shaper(Delaunay):
         """Eliminates redundant simplices and then sets appropriate mask.
 
         Returns:
-            alpha_opt: themost accurate alpha value based on minimal amount of simplices
+            alpha_opt: the most accurate alpha value based on minimal amount of simplices
             shape: shape after optimization
         """
         # We have to use at least N//3 triangles to connect N points
