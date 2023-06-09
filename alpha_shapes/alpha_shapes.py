@@ -187,26 +187,24 @@ class Alpha_Shaper(Delaunay):
         return self
 
 
-def _normalize_points(points: NDArray):
-    """
-    Normalize points to the unit square, centered at the origin.
+def _normalize_points(points: ArrayLike):
+    """Normalizes points to the unit square, centered at the origin.
 
-    Parameters:
-    -----------
+    Args:
     points: array-like, shape(N,2)
         coordinates of the points
 
     Returns:
-    --------
-    points: array, shape(N,2)
-        normalized coordinates of the points
+        points: array, shape(N,2)
+            normalized coordinates of the points
 
-    center: array, shape(2,)
-        coordinates of the center of the points
+        center: array, shape(2,)
+            coordinates of the center of the points
 
-    scale: array, shape(2,)
-        scale factors for the normalization
+        scale: array, shape(2,)
+            scale factors for the normalization
     """
+
     center = points.mean(axis=0)
     scale = np.ptp(points, axis=0)  # peak to peak distance
     normalized_points = (points - center) / scale
@@ -214,13 +212,17 @@ def _normalize_points(points: NDArray):
     return normalized_points, center, scale
 
 
-def _circumradius_sq(lengths):
-    r"""
-    Calculate the squared circumradius `r_c^2`,
-    where
-    r_c = \frac {abc}{4{\sqrt {s(s-a)(s-b)(s-c)}}}
-    See: `https://en.wikipedia.org/wiki/Circumscribed_circle`
+def _circumradius_sq(lengths: NDArray) -> NDArray:
+    """ Calculates the squared circumradius of triangle.
+    See more about it on: `https://en.wikipedia.org/wiki/Circumscribed_circle`.
+
+    Args:
+        lengths: contains lengths of triangle's sides.
+
+    Returns:
+        Contains values of squared circumradiuses.
     """
+
     lengths = np.asarray(lengths)
     s = np.sum(lengths) / 2
 
@@ -235,7 +237,16 @@ def _circumradius_sq(lengths):
 
 
 def _calculate_cirumradius_sq_of_triangle(x: ArrayLike, y: ArrayLike) -> NDArray:
-    """Calculates the squared circumradius of a triangle with coordinates x, y"""
+    """Calculates the squared circumradius of a triangle with coordinates x, y.
+
+    Args:
+        x: Contains all x values of triangle's points.
+        y: Contains all y values of triangle's points.
+
+    Returns:
+        NDArray with outcome from _circumradius_sq. It contains squared circumradius of internal triangle.
+    """
+
     dx = x - np.roll(x, shift=-1)
     dy = y - np.roll(y, shift=-1)
 
@@ -246,9 +257,14 @@ def _calculate_cirumradius_sq_of_triangle(x: ArrayLike, y: ArrayLike) -> NDArray
 def _simplex_to_triangle(smpl, tri) -> Polygon:
     """Creates internal triangles from given simplices.
 
-    Returns:
+    Args:
+        smpl: values of simplex.
+        tri: particular triangle.
 
+    Returns:
+        Polygon(shapely.geometry): contains points values of internal triangle.
     """
+
     x = tri.x[smpl]
     y = tri.y[smpl]
 
