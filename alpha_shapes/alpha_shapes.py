@@ -3,6 +3,8 @@ This is a core module of package, which contains exceptions, functions
 and classes essential to printing figures.
 """
 
+from typing import Tuple
+
 import numpy as np
 from matplotlib.tri import Triangulation
 from numpy.typing import ArrayLike, NDArray
@@ -12,22 +14,22 @@ from shapely.ops import unary_union
 
 class AlphaException(Exception):
     """Abstract class for all exceptions which will be raised within Alpha_Shaper class
-     directly or through Delaunay class"""
+     directly or through Delaunay class."""
     pass
 
 
 class NotEnoughPoints(AlphaException):
-    """If instance of class Delaunay has less than 3 points, this exception will be raised"""
+    """If instance of class Delaunay has less than 3 points, this exception will be raised."""
     pass
 
 
 class OptimizationFailure(AlphaException):
-    """If Alpha_Shaper instance can't cover all vertices, this exception will be raised"""
+    """If Alpha_Shaper instance can't cover all vertices, this exception will be raised."""
     pass
 
 
 class OptimizationWarning(UserWarning):
-    """Warns user without interrupting the program"""
+    """Warns user without interrupting the program."""
     pass
 
 
@@ -35,13 +37,17 @@ class Delaunay(Triangulation):
     """
     Delaunay is abstract class, which derives from matplotlib.tri.Triangulation.
     It adds set of coordinates and essential methods.
+
     """
 
-    def __init__(self, coords: NDArray):
+    def __init__(self, coords: NDArray) -> None:
         """In try block function invokes __init__ method of class
         Triangulation from matplotlib package and sends
         to it default set of coordinates. If ValueError occurs,
-        function will tackle it."""
+        function will tackle it.
+
+        """
+
         try:
             super().__init__(x=coords[:, 0], y=coords[:, 1])
         except ValueError as e:
@@ -51,42 +57,54 @@ class Delaunay(Triangulation):
                 raise
 
     @property
-    def simplices(self):
-        """Creates simplices property essential to further operations"""
+    def simplices(self) -> NDArray:
+        """Create simplices property essential to further operations."""
         return self.triangles
 
-    def __len__(self):
-        """Returns amount of object's edges"""
+    def __len__(self) -> int:
+        """Return amount of object's edges."""
         return self.simplices.shape[0]
 
 
 class Alpha_Shaper(Delaunay):
-    """Crucial class to creating alpha-shapes"""
-    def __init__(self, points: ArrayLike, normalize=True):
-        """Assings points to instance, creates basic properties and denormalizes points"""
+    """Crucial class to creating alpha-shapes."""
+
+    def __init__(self, points: ArrayLike, normalize=True) -> None:
+        """Assign points to instance, create basic properties and denormalize points"""
         self.normalized = normalize
 
         points = np.array(points)
 
         if self.normalized:
             points, center, scale = _normalize_points(points)
+            self._initialize(points)
+            self._denormalize(center, scale)
+
+        else:
+            self._initialize(points)
+
+    def _initialize(self, points: NDArray) -> None:
+        """
+        _initialize the alpha shaper.
+        """
 
         super().__init__(points)
 
         self.circumradii_sq = self._calculate_cirumradii_sq_of_internal_triangles()
         self.argsort = np.argsort(self.circumradii_sq)
+        default_mask = np.full_like(self.circumradii_sq, False, dtype=bool)
+        self.set_mask(default_mask)
 
-        if self.normalized:
-            self._denormalize(center, scale)
-
-    def _denormalize(self, center: ArrayLike, scale: ArrayLike):
-        """Transforms back points into their orginal scale"""
+    def _denormalize(self, center: ArrayLike, scale: ArrayLike) -> None:
+        """Transform back points into their orginal scale."""
         self.x = self.x * scale[0] + center[0]
         self.y = self.y * scale[1] + center[1]
 
     def _calculate_cirumradii_sq_of_internal_triangles(self) -> NDArray:
         """Main-line method, which calculates circumradius squares of all internal triangles
-         and saves them into numpy.array. It's important during initialization of object."""
+         and saves them into numpy.array. It's important during initialization of object.
+         """
+
         circumradii_sq = [
             self._get_circumradius_sq_of_internal_simplex(smpl)
             for smpl in self.simplices
@@ -94,35 +112,41 @@ class Alpha_Shaper(Delaunay):
         return np.array(circumradii_sq)
 
     def _get_circumradius_sq_of_internal_simplex(self, smpl: ArrayLike) -> NDArray:
-        """Reads values of simplices and then
-        sends it to _calculate_cirumradius_sq_of_triangle function."""
+        """Read values of simplices and then
+        send it to _calculate_cirumradius_sq_of_triangle function.
+        """
+
         x = self.x[smpl]
         y = self.y[smpl]
         return _calculate_cirumradius_sq_of_triangle(x, y)
 
     def _sorted_simplices(self) -> NDArray:
-        """Returns all simplices of instance, sorted before by given axis"""
+        """Return all simplices of instance, sorted before by given axis."""
         return self.simplices[self.argsort]
 
-    def _sorted_circumradii_sw(self) -> NDArray:
-        """Returns sorted values of squares circumraiduses of internal triangles"""
+    def _sorted_circumradii_sw(self) -> NDArray[np.float64]:
+        """Return sorted values of squares circumradiuses of internal triangles."""
         return self.circumradii_sq[self.argsort]
 
     def _shape_from_simplices(self, simplices: ArrayLike) -> ArrayLike:
-        """Sends values of simplices to _simplex_to_triangle
-        function and saves triangles. Function shapely.ops.unary_union can receive and return many types of objects,
-        its output depends on input types. In this case function will return array of ints."""
+        """Send values of simplices to _simplex_to_triangle
+        function and save triangles. Function shapely.ops.unary_union can receive and return many types of objects,
+        its output depends on input types. In this case function will return array of ints.
+        """
+
         triangles = [_simplex_to_triangle(smpl, self) for smpl in simplices]
 
         return unary_union(triangles)
 
     def get_mask(self, alpha: float) -> NDArray:
-        """Creates mask, based on squares circumradiuses of internal triangles"""
+        """Create mask, based on squares circumradiuses of internal triangles."""
         return self.circumradii_sq > 1 / alpha**2
 
     def get_shape(self, alpha: float) -> ArrayLike:
-        """Returns shape, constrained by aplha in form of array.
-        If aplha is less than 0, function will use original array of simplices"""
+        """Return shape, constrained by aplha in form of array.
+        If alpha is less than 0, function will use original array of simplices.
+        """
+
         if alpha > 0:
             select = self.circumradii_sq <= 1 / alpha**2
             simplices = self.simplices[select]
@@ -132,21 +156,24 @@ class Alpha_Shaper(Delaunay):
         return self._shape_from_simplices(simplices)
 
     def _nth_shape(self, n: int) -> ArrayLike:
-        """Returns the shape formed by the amount of n-smallest simplices"""
+        """Return the shape formed by the amount of n-smallest simplices."""
         simplices = self._sorted_simplices()[:n]
         return self._shape_from_simplices(simplices)
 
     def all_vertices(self) -> set:
-        """Returns all vertices of object by set"""
+        """Return all vertices of object by set."""
         return set(np.ravel(self.simplices))
 
     def _uncovered_vertices(self, simplices: ArrayLike) -> set:
-        """Returns a set of vertices, which is not covered by the specified simplices."""
+        """Return a set of vertices, which is not covered by the specified simplices."""
         return self.all_vertices() - set(np.ravel(simplices))
 
     def _get_minimum_fully_covering_index_of_simplices(self) -> ArrayLike:
-        """Returns the minimum amount of simplices essential to cover all vertices.
-        If function face problem with vertices, it will raise OptimizationFailure exception."""
+        """Return the minimum amount of simplices essential to cover all vertices.
+        The set of all simplices up to this index is fully covering.
+        If function face problem with vertices, it will raise OptimizationFailure exception.
+
+        """
         # We have to use at least N//3 triangles to connect N points.
         simplices = self._sorted_simplices()
         n_start = len(self) // 3
@@ -162,15 +189,15 @@ class Alpha_Shaper(Delaunay):
             if not uncovered_vertices:
                 return n
 
-        if uncovered_vertices:
-            raise OptimizationFailure("Maybe there are duplicate points?")
+        raise OptimizationFailure("Maybe there are duplicate points?")
 
     def optimize(self) -> (NDArray, ArrayLike):
-        """Eliminates redundant simplices and then sets appropriate mask.
+        """Eliminate redundant simplices and then sets appropriate mask.
 
         Returns:
             alpha_opt: the most accurate alpha value based on minimal amount of simplices
             shape: shape after optimization
+
         """
         # We have to use at least N//3 triangles to connect N points
         n_min = self._get_minimum_fully_covering_index_of_simplices()
@@ -181,14 +208,14 @@ class Alpha_Shaper(Delaunay):
         return alpha_opt, shape
 
     def set_mask_at_alpha(self, alpha: float):
-        """Sets the mask for the alpha shape based on the appropriate alpha value."""
+        """Set the mask for the alpha shape based on the appropriate alpha value."""
         mask = self.get_mask(alpha)
         self.set_mask(mask)
         return self
 
 
-def _normalize_points(points: ArrayLike):
-    """Normalizes points to the unit square, centered at the origin.
+def _normalize_points(points: NDArray) -> Tuple[NDArray, NDArray, NDArray]:
+    """Normalize points to the unit square, centered at the origin.
 
     Args:
     points: array-like, shape(N,2)
@@ -203,6 +230,7 @@ def _normalize_points(points: ArrayLike):
 
         scale: array, shape(2,)
             scale factors for the normalization
+
     """
 
     center = points.mean(axis=0)
@@ -213,7 +241,7 @@ def _normalize_points(points: ArrayLike):
 
 
 def _circumradius_sq(lengths: NDArray) -> NDArray:
-    """ Calculates the squared circumradius of triangle.
+    """ Calculate the squared circumradius of triangle.
     See more about it on: `https://en.wikipedia.org/wiki/Circumscribed_circle`.
 
     Args:
@@ -221,6 +249,7 @@ def _circumradius_sq(lengths: NDArray) -> NDArray:
 
     Returns:
         Contains values of squared circumradiuses.
+
     """
 
     lengths = np.asarray(lengths)
@@ -237,14 +266,15 @@ def _circumradius_sq(lengths: NDArray) -> NDArray:
 
 
 def _calculate_cirumradius_sq_of_triangle(x: ArrayLike, y: ArrayLike) -> NDArray:
-    """Calculates the squared circumradius of a triangle with coordinates x, y.
+    """Calculate the squared circumradius of a triangle with coordinates x, y.
 
     Args:
         x: Contains all x values of triangle's points.
         y: Contains all y values of triangle's points.
 
     Returns:
-        NDArray with outcome from _circumradius_sq. It contains squared circumradius of internal triangle.
+         NDArray with outcome from _circumradius_sq. It contains squared circumradius of internal triangle.
+
     """
 
     dx = x - np.roll(x, shift=-1)
@@ -255,7 +285,7 @@ def _calculate_cirumradius_sq_of_triangle(x: ArrayLike, y: ArrayLike) -> NDArray
 
 
 def _simplex_to_triangle(smpl, tri) -> Polygon:
-    """Creates internal triangles from given simplices.
+    """Create internal triangles from given simplices.
 
     Args:
         smpl: values of simplex.
@@ -263,6 +293,7 @@ def _simplex_to_triangle(smpl, tri) -> Polygon:
 
     Returns:
         Polygon(shapely.geometry): contains points values of internal triangle.
+
     """
 
     x = tri.x[smpl]
