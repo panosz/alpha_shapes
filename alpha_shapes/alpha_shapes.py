@@ -1,9 +1,9 @@
 """
-This is a core module of package, which contains exceptions, functions
-and classes essential to printing figures.
+This is a core module of package which contains exceptions, functions
+and classes essential to creating and working with figures.
 """
 
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 from matplotlib.tri import Triangulation
@@ -33,14 +33,22 @@ class OptimizationWarning(UserWarning):
 
 
 class Delaunay(Triangulation):
-    """Abstract class, which provides useful interface. This idea is similar to scipy.spatial.Delaunay solution.
-    Coordinates of future Alpha_Shaper object will be added via Delaunay class.
-    If the coordinates do not meet the conditions, the class will raise an appropriate error.
-    It also adds key methods.
-
+    """Abstract class with useful interface.
+    Visitor sublclass of matplotlib.tri.Triangulation.
+    See similar idea on scipy.spatial.Delaunay solution.
     """
 
     def __init__(self, coords: NDArray) -> None:
+        """Set the interface object and pass the coords into it.
+
+        Args:
+            coords(NDArray): raw coords at which preparation process will be performed.
+
+        Raises:
+        - NotEnoughPoints: If there are fewer than 3 points provided.
+        - ValueError: For other value-related issues with the coordinates.
+        """
+
         try:
             super().__init__(x=coords[:, 0], y=coords[:, 1])
         except ValueError as e:
@@ -51,21 +59,30 @@ class Delaunay(Triangulation):
 
     @property
     def simplices(self) -> NDArray:
-        """Create simplices property essential to further operations."""
+        """Return the collection of triangles."""
         return self.triangles
 
     def __len__(self) -> int:
-        """Return amount of object's edges."""
+        """Return amount of object's simplices."""
         return self.simplices.shape[0]
 
 
 class Alpha_Shaper(Delaunay):
+    """The class enables the creation of shapes and further operations on them."""
+
     mask: NDArray  # for type hinting
-    """Crucial class to creating alpha-shapes. 
-   The class handles points, creates internal triangles and generates shapes. 
-    """
 
     def __init__(self, points: ArrayLike, normalize=True) -> None:
+        """Pass points into shaper. Optionally perform normalization.
+
+        Args:
+            points(ArrayLike): points used to create shapes.
+
+            normalize(bool): The flag determines whether the normalization process will be carried out.
+            See more about normalization on https://github.com/panosz/alpha_shapes.
+
+        """
+
         self.normalized = normalize
 
         points = np.array(points)
@@ -79,7 +96,12 @@ class Alpha_Shaper(Delaunay):
             self._initialize(points)
 
     def _initialize(self, points: NDArray) -> None:
-        """_initialize the alpha shaper."""
+        """_initialize the alpha shaper.
+
+        Args:
+            points(NDArray): points at which normalization will be performed.
+
+        """
 
         super().__init__(points)
 
@@ -109,7 +131,7 @@ class Alpha_Shaper(Delaunay):
         return _calculate_cirumradius_sq_of_triangle(x, y)
 
     def _sorted_simplices(self) -> NDArray[np.float64]:
-        """Return all simplices of instance, sorted before by given axis."""
+        """Return the collection of simplices, sorted by their circumradius."""
         return self.simplices[self.argsort]
 
     def _sorted_circumradii_sw(self) -> NDArray[np.float64]:
@@ -117,19 +139,21 @@ class Alpha_Shaper(Delaunay):
         return self.circumradii_sq[self.argsort]
 
     def _shape_from_simplices(self, simplices: ArrayLike) -> ArrayLike:
-        """From given simplices create triangles. Then make union."""
+        """Return the shape from simplices.
+        Output is in unary_union form which makes further operations on a shape easier. """
 
         triangles = [_simplex_to_triangle(smpl, self) for smpl in simplices]
 
         return unary_union(triangles)
 
     def get_mask(self, alpha: float) -> NDArray:
-        """Create mask, based on squares of circumradiuses of internal triangles."""
+        """Return mask, based on squares of circumradiuses of internal triangles.
+        Mask specifies which elements should be considered for triangulation."""
         return self.circumradii_sq > 1 / alpha**2
 
     def get_shape(self, alpha: float) -> ArrayLike:
-        """Return shape, constrained by alpha.
-        If alpha is less or equal to 0, function will use original array of simplices.
+        """Return shape, based on the given alpha.
+        If alpha is less or equal to 0, the shape creation will be based on external points.
         """
 
         if alpha > 0:
@@ -154,11 +178,15 @@ class Alpha_Shaper(Delaunay):
         return self.all_vertices() - set(np.ravel(simplices))
 
     def _get_minimum_fully_covering_index_of_simplices(self) -> int:
-        """Return the minimum amount of simplices essential to cover all vertices.
+        """Return the minimum index of simplices needed to cover all vertices.
         The set of all simplices up to this index is fully covering.
-        If function face problems, it will raise appropriate exceptions.
+
+        Raises:
+            - OptimizationFailure: For issues when the conditions for optimization are not met.
+            A common issue is duplicate points in the dataset.
 
         """
+
         # We have to use at least N//3 triangles to connect N points.
         simplices = self._sorted_simplices()
         n_start = len(self) // 3
@@ -177,13 +205,15 @@ class Alpha_Shaper(Delaunay):
         raise OptimizationFailure("Maybe there are duplicate points?")
 
     def optimize(self) -> Tuple[NDArray, ArrayLike]:
-        """Eliminate redundant simplices and then set appropriate mask.
+        """Return the alpha value that allows plotting the shape with the minimum number of triangles.
+        Vertices of initial triangulation aren't left uncovered.
 
         Returns:
-            alpha_opt: the most appropriate alpha value based on minimal amount of simplices.
-            shape: shape after optimization.
+            alpha_opt(NDArray): optimized alpha value.
+            shape(ArrayLike): shape based on the optimized alpha value.
 
         """
+
         # We have to use at least N//3 triangles to connect N points
         n_min = self._get_minimum_fully_covering_index_of_simplices()
         alpha_opt = 1 / np.sqrt(self._sorted_circumradii_sw()[n_min]) - 1e-10
@@ -225,15 +255,15 @@ def _normalize_points(points: NDArray) -> Tuple[NDArray, NDArray, NDArray]:
     return normalized_points, center, scale
 
 
-def _circumradius_sq(lengths: NDArray) -> NDArray:
-    """Calculate the squared circumradius of triangle.
+def _circumradius_sq(lengths: NDArray) -> Union[float, np.inf]:
+    """Calculate the squared circumradius `r_c^2` where r_c = \frac {abc}{4{\sqrt {s(s-a)(s-b)(s-c)}}}.
     See more about it on: `https://en.wikipedia.org/wiki/Circumscribed_circle`.
 
     Args:
-        lengths: contains lengths of triangle's sides.
+        lengths(NDArray): contains lengths of triangle's sides.
 
     Returns:
-        Contains values of squared circumradiuses.
+        Union[float, np.inf]: value of squared circumradius.
 
     """
 
@@ -254,11 +284,11 @@ def _calculate_cirumradius_sq_of_triangle(x: ArrayLike, y: ArrayLike) -> NDArray
     """Calculate the squared circumradius of a triangle with coordinates x, y.
 
     Args:
-        x: Contains all x values of triangle's points.
-        y: Contains all y values of triangle's points.
+        x, y: array-like, shape(3,)
+        coordinates of the triangle
 
     Returns:
-         outcome:  Contains squared circumradius of internal triangle.
+         NDArray: squared circumradius of internal triangle.
 
     """
 
@@ -270,14 +300,14 @@ def _calculate_cirumradius_sq_of_triangle(x: ArrayLike, y: ArrayLike) -> NDArray
 
 
 def _simplex_to_triangle(smpl: slice, tri) -> Polygon:
-    """Create internal triangle from given simplices.
+    """Return triangle points.
 
     Args:
-        smpl: value of simplex.
+        smpl(slice): value of simplex.
         tri: particular triangle.
 
     Returns:
-        Polygon: contains points values of internal triangle.
+        Polygon: contains points values of triangle.
 
     """
 

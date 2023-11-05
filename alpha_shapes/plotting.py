@@ -1,5 +1,5 @@
 """This module contains mechanisms essential to printing figures.
-Functions receive sets of points and then plot appropriate shapes.
+Functions make necessary operations on points sets and plot appropriate shapes.
 """
 
 import numpy as np
@@ -8,7 +8,7 @@ from matplotlib.patches import PathPatch
 
 
 def plot_alpha_shape(ax, alpha_shape):
-    """Mainline function, which plots all sets of figure's points.
+    """Plot final set of figure's points.
 
     Args:
         ax(Axes.matplotlib.subplots): axes of image.
