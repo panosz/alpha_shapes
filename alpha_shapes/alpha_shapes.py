@@ -1,6 +1,7 @@
 """
 Utility module for the calculation of alpha shapes
 """
+
 from typing import Tuple
 
 import numpy as np
@@ -213,10 +214,10 @@ def _circumradius_sq(lengths):
 
     denom = 16 * s * np.prod(s - lengths)
 
-    if denom < 1e-16:
+    try:
+        return num / denom
+    except ZeroDivisionError:
         return np.inf
-
-    return num / denom
 
 
 def _calculate_cirumradius_sq_of_triangle(x: ArrayLike, y: ArrayLike):
